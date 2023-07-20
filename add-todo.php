@@ -1,3 +1,7 @@
+<?php
+namespace Todo;
+?>
+
 <div class="col-6 col-md-4 col-lg-3">
     <div class="card p-3  shadow position-relative bg-body" >
         <form action="<?php echo htmlspecialchars($_SESSION["PHP_SELF"]) ?>" method="POST">
@@ -13,5 +17,5 @@
 
 <?php
     if(isset($_POST["title"])){
-        // add item to db
+
     }

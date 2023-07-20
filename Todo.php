@@ -1,4 +1,7 @@
 <?php
+namespace Todo;
+use Exception;
+
 const TODO_STATES_COLORS = [
     "passive"=>"body",
     "ongoing"=>"primary",
@@ -29,9 +32,9 @@ class Todo {
         $current_state_color = TODO_STATES_COLORS[$this->state];
         return <<<HTML
 <div class="col-6 col-md-4 col-lg-3">
-    <div class="card bg-opacity-25 bg-{$current_state_color}">
+    <div class="card bg-opacity-25 bg-$current_state_color">
         <div class="card-body">
-            <h5 class="card-title">{$this->title}</h5>
+            <h5 class="card-title">$this->title</h5>
             <div class="d-flex btn-group">
                 <a href="#" class="card-link btn btn-outline-success border-secondary border-end-0">
                     <i class="bi bi-check2-circle"></i>
@@ -47,6 +50,5 @@ class Todo {
     </div>
 </div>
 HTML;
-
     }
 }
