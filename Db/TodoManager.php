@@ -1,13 +1,12 @@
 <?php
-namespace Todo;
+namespace Db;
 
 include("Manager.php");
 
 use Exception;
 use mysqli_stmt;
-use function Db\executeQuery;
 
-class TodoManager extends \Manager {
+class TodoManager extends Manager {
     public function __construct($table_name="todos") {
         parent::__construct($table_name, ["title", "owner"]);
     }
@@ -16,14 +15,11 @@ class TodoManager extends \Manager {
         $this->setupSelectQuery($fields, array_keys($conditionData), $ordering);
         return executeQuery($this->selectQuery, array_values($conditionData));
     }
-    public function getByOwner(int $ownerId, array $fields=null, array $ordering=null): mysqli_stmt {
+    public function getByOwnerId(int $ownerId, array $fields=null, array $ordering=null): mysqli_stmt {
         $this->setupSelectQuery($fields, ["owner"], $ordering);
         return executeQuery($this->selectQuery, [$ownerId]);
     }
     public function getById(int $id): mysqli_stmt {
-        return executeQuery($this->selectEverythingByIdQuery, [$id], "i");
-    }
-    public function getByOwnerId(int $id): mysqli_stmt {
         return executeQuery($this->selectEverythingByIdQuery, [$id], "i");
     }
 
@@ -39,8 +35,14 @@ class TodoManager extends \Manager {
         return executeQuery($this->deleteByIdQuery, [$id], "i");
     }
 
-    public function updateById(int $id, array $data): mysqli_stmt {
+    public function updateById(array $data, int $id): mysqli_stmt {
         $this->setupUpdateQuery($data);
-        return executeQuery($this->updateQuery, [$id], "i");
+        return executeQuery(
+            $this->updateQuery,
+            [...array_values($data), $id],
+            str_repeat("s", count(array_values($data)))."i"
+        );
     }
 }
+
+return new TodoManager();

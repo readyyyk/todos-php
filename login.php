@@ -1,9 +1,9 @@
 <?php session_start() ?>
 <!doctype html>
 <html lang="en">
-    <?php include("./head.html"); ?>
+    <?php include("./components/head.html"); ?>
 <body>
-    <?php include('./header.php'); ?>
+    <?php include('./components/header.php'); ?>
 
     <div class="card p-4 bg-secondary bg-opacity-10 shadow position-absolute top-50 start-50 translate-middle">
         <form action="<?php echo htmlspecialchars($_SESSION["PHP_SELF"]) ?>" method="POST" style="width: 225px;">

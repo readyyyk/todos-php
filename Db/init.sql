@@ -21,3 +21,6 @@ create table todos (
     PRIMARY KEY (id),
     FOREIGN KEY (owner) REFERENCES users(id)
 );
+
+INSERT INTO users (username, password) VALUES ("test", "test");
+INSERT INTO todos (owner, title) VALUES (1, "testing example todo title (why 'title'? idk)");

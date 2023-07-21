@@ -1,4 +1,8 @@
 <?php
+
+namespace Db;
+use mysqli_stmt;
+
 abstract class Manager
 {
     private static function replace_flag(int $id): string
@@ -21,7 +25,8 @@ abstract class Manager
 
     protected int $countAddFields;
 
-    public function __construct($table_name, array $addFields) {
+    public function __construct($table_name, array $addFields)
+    {
         $this->table_name = $table_name;
 
         $this->countAddFields = count($addFields);
@@ -30,40 +35,55 @@ abstract class Manager
 
         $this->selectEverythingByIdQuery = "SELECT * FROM $this->table_name WHERE `id` = ?";
 
-        $this->addQuery = "INSERT INTO $this->table_name (".implode(",", $addFields).")
-                            VALUES (".substr(str_repeat("?, ", count($addFields)), 0, -2).")";
+        $this->addQuery = "INSERT INTO $this->table_name (" . implode(",", $addFields) . ")
+                            VALUES (" . substr(str_repeat("?, ", count($addFields)), 0, -2) . ")";
 
         $this->deleteByIdQuery = "DELETE FROM $this->table_name WHERE `id` = ?";
 
-        $this->baseUpdateByIdQuery = "UPDATE $this->table_name SET ".$this::replace_flag(0)."WHERE `id` = ?";
-        $this->baseSelectQuery = "SELECT ".$this::replace_flag(0)." FROM $this->table_name WHERE ".$this::replace_flag(1)." ORDER BY ".$this::replace_flag(2);
+        $this->baseUpdateByIdQuery = "UPDATE $this->table_name SET " . $this::replace_flag(0) . "WHERE `id` = ?";
+        $this->baseSelectQuery = "SELECT " . $this::replace_flag(0) . " FROM $this->table_name WHERE " . $this::replace_flag(1) . " ORDER BY " . $this::replace_flag(2);
     }
 
-    protected function validateAddData (array $data): bool
+    protected function validateAddData(array $data): bool
     {
         return count($data) === $this->countAddFields;
     }
+
     protected function setupUpdateQuery(array $data): static
     {
-        $params = array_reduce(
+        var_dump(array_reduce(
             array_keys($data),
-            fn(array $acc, string $item) => array_push($acc, $item." = ?"),
+            function (array $acc, string $item) {
+                $acc[] = "$item = ?";
+                return $acc;
+            },
             []
+        ));
+        $params = implode(
+            ", ",
+            array_reduce(
+                array_keys($data),
+                function (array $acc, string $item) {
+                    $acc[] = "$item = ?";
+                    return $acc;
+                },
+                []
+            )
         );
-        $this->updateQuery = str_replace($this::replace_flag(0), implode(", ", $params), $this->baseUpdateByIdQuery);
+        $this->updateQuery = str_replace($this::replace_flag(0), $params." ", $this->baseUpdateByIdQuery);
         var_dump($this->updateQuery);
         return $this;
     }
 
-    protected function setupSelectQuery(array $fields=null, array $conditionFields=null, array $ordering = null):static
+    protected function setupSelectQuery(array $fields = null, array $conditionFields = null, array $ordering = null): static
     {
         $fields_stringified = "*";
-        if($fields){
+        if ($fields) {
             $fields_stringified = implode(", ", $fields);
         }
 
         $condition_stringified = "TRUE";
-        if($conditionFields){
+        if ($conditionFields) {
             $condition_stringified =
                 implode(
                     " AND ",
@@ -79,7 +99,7 @@ abstract class Manager
         }
 
         $ordering_stringified = "id ASC";
-        if($ordering){
+        if ($ordering) {
             $ordering_stringified =
                 implode(
                     ", ",
@@ -101,10 +121,14 @@ abstract class Manager
         return $this;
     }
 
-    public abstract function get(array $fields=null, array $conditionData=null, array $ordering = null): mysqli_stmt;
+    public abstract function get(array $fields = null, array $conditionData = null, array $ordering = null): mysqli_stmt;
+
     abstract public function getById(int $id): mysqli_stmt;
+
     abstract public function add(...$data): mysqli_stmt;
+
     abstract public function deleteById(int $id): mysqli_stmt;
-    abstract public function updateById(int $id, array $data): mysqli_stmt;
+
+    abstract public function updateById(array $data, int $id): mysqli_stmt;
 }
 
