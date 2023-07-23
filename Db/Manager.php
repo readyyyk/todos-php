@@ -44,10 +44,17 @@ abstract class Manager
         $this->baseSelectQuery = "SELECT " . $this::replace_flag(0) . " FROM $this->table_name WHERE " . $this::replace_flag(1) . " ORDER BY " . $this::replace_flag(2);
     }
 
-    protected function validateAddData(array $data): bool
-    {
-        return count($data) === $this->countAddFields;
-    }
+
+    /**
+     * example:
+     *
+     * {
+     *      if(count($data) !== $this->countAddFields)
+     *          return new Exception("Invalid data array");
+     *      return null;
+     * }
+     */
+    protected abstract function validateAddData(array $data): \Exception|null;
 
     protected function setupUpdateQuery(array $data): static
     {
@@ -121,14 +128,38 @@ abstract class Manager
         return $this;
     }
 
-    public abstract function get(array $fields = null, array $conditionData = null, array $ordering = null): mysqli_stmt;
+    public function get(array $fields = null, array $conditionData = null, array $ordering = null): mysqli_stmt
+    {
+        $this->setupSelectQuery($fields, array_keys($conditionData), $ordering);
+        return executeQuery($this->selectQuery, array_values($conditionData));
+    }
 
-    abstract public function getById(int $id): mysqli_stmt;
+    /**
+     * executes $this->validateAddData($data);
+     * @throws \Exception
+     */
+        public function add(...$data): mysqli_stmt {
+            $validationError = $this->validateAddData($data);
+            if(!empty($validationError))
+                throw $validationError;
+            return executeQuery($this->addQuery, $data);
+        }
 
-    abstract public function add(...$data): mysqli_stmt;
+    public function getById(int $id): mysqli_stmt {
+        return executeQuery($this->selectEverythingByIdQuery, [$id], "i");
+    }
 
-    abstract public function deleteById(int $id): mysqli_stmt;
+    public function deleteById(int $id): mysqli_stmt {
+        return executeQuery($this->deleteByIdQuery, [$id], "i");
+    }
 
-    abstract public function updateById(array $data, int $id): mysqli_stmt;
+    public function updateById(array $data, int $id): mysqli_stmt {
+        $this->setupUpdateQuery($data);
+        return executeQuery(
+            $this->updateQuery,
+            [...array_values($data), $id],
+            str_repeat("s", count(array_values($data)))."i"
+        );
+    }
 }
 

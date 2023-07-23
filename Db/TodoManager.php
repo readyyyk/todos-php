@@ -11,37 +11,29 @@ class TodoManager extends Manager {
         parent::__construct($table_name, ["title", "owner"]);
     }
 
-    public function get(array $fields=null, array $conditionData=null   , array $ordering = null): mysqli_stmt {
-        $this->setupSelectQuery($fields, array_keys($conditionData), $ordering);
-        return executeQuery($this->selectQuery, array_values($conditionData));
+    protected function validateAddData(array $data): Exception|null
+    {
+        if(count($data) !== $this->countAddFields)
+            return new Exception("Array has wrong number values.\nMust be passed: $this->countAddFields, Passed: {${count($data)}}");
+        list($title, $owner) = $data;
+        if(!isset($title, $owner))
+            return new Exception("Invalid data array:\nProvide data as [\$title, \$owner]");
+        if(!(string)$title || !(int)$owner)
+            return new Exception("Invalid data types:\n\$title must be `string`, owner - `int`");
+        return null;
     }
+
     public function getByOwnerId(int $ownerId, array $fields=null, array $ordering=null): mysqli_stmt {
         $this->setupSelectQuery($fields, ["owner"], $ordering);
         return executeQuery($this->selectQuery, [$ownerId]);
     }
-    public function getById(int $id): mysqli_stmt {
-        return executeQuery($this->selectEverythingByIdQuery, [$id], "i");
-    }
 
-    /** @throws Exception */
+    /**
+     * @param mixed $data string $title, int $owner
+     * @throws Exception
+     */
     public function add(...$data): mysqli_stmt {
-        if(!$this->validateAddData($data))
-            throw new Exception("Invalid data array");
-        list($title, $owner) = $data;
-        return executeQuery($this->addQuery, [$title, $owner], "si");
-    }
-
-    public function deleteById(int $id): mysqli_stmt {
-        return executeQuery($this->deleteByIdQuery, [$id], "i");
-    }
-
-    public function updateById(array $data, int $id): mysqli_stmt {
-        $this->setupUpdateQuery($data);
-        return executeQuery(
-            $this->updateQuery,
-            [...array_values($data), $id],
-            str_repeat("s", count(array_values($data)))."i"
-        );
+        return parent::add(...$data);
     }
 }
 

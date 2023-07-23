@@ -1,16 +1,16 @@
 <?php session_start() ?>
 <?php
-$_SESSION["logged_user"] = [
-    "id"=>1,
-    "username"=>"test",
-];
+//$_SESSION["logged_user"] = [
+//    "id"=>1,
+//    "username"=>"test",
+//];
 ?>
 <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-lg">
         <ul class="navbar-nav flex-row me-auto">
             <?php if(isset($_SESSION["logged_user"]["id"])) { ?>
                 <li class="nav-item me-2">
-                    <a href="../login.php" class="btn btn-outline-primary">
+                    <a href="../logout.php" class="btn btn-outline-primary">
                         <i class="bi bi-box-arrow-right"></i>
                         <?php
                             echo $_SESSION["logged_user"]["username"];

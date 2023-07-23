@@ -48,11 +48,18 @@
 </html>
 
 <?php
-$_SESSION['usernameInput'] = $_POST["username"];
-$_SESSION['passwordInput'] = $_POST["password"];
-$_SESSION['password2Input'] = $_POST["password2"];
+require_once "./Db/Db.php";
+require_once "./Db/Manager.php";
+require_once "./Db/UserManager.php";
+use Db\UserManager;
+
+const userManager = new UserManager();
 
 if(isset($_POST["submit"])){
+    $_SESSION['usernameInput'] = $_POST["username"];
+    $_SESSION['passwordInput'] = $_POST["password"];
+    $_SESSION['password2Input'] = $_POST["password2"];
+
     $currentLocation = htmlspecialchars($_SERVER["PHP_SELF"]);
 
     if(preg_match('/[^A-Za-z]/', $_POST["username"])){
@@ -68,14 +75,16 @@ if(isset($_POST["submit"])){
         return;
     }
 
-    $_SESSION["username"] = $_POST["username"];
-    header("location: /");
-
-//    if username used
-    if(false){
-        header("location: $currentLocation?usernameError=".urlencode("Username already used!"));
+    $registerResult = \userManager->register($_POST["username"], $_POST["password"]);
+    var_dump($registerResult);
+    return;
+    if($registerResult instanceof Exception){
+        header("location: $currentLocation?error=".urlencode($registerResult->getMessage()));
         return;
     }
+
+    $_SESSION['logged_user'] = $registerResult;
+    header("location: /");
 }
 
 
